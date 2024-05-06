@@ -33,7 +33,7 @@ racket compiler.rkt -v test-programs/sum1.irv
 
 [ Question 2 ] 
 
-For this task, you will write four new .ifa programs. Your programs
+For this task, you will write three new .ifa programs. Your programs
 must be correct, in the sense that they are valid. There are a set of
 starter programs in the test-programs directory now. Your job is to
 create three new `.ifa` programs and compile and run each of them. It
