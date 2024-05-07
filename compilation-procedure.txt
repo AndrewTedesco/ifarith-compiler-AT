@@ -1,0 +1,15 @@
+Kris doesn't give good information for building the programs with linux, at least if you are using WSL
+
+done in steps:
+
+racket compiler.rkt -v test-programs/__.ifa
+nasm -felf64 test-programs/__.asm
+ld test-programs/__.o -o test-programs/__ -lc -I/lib64/ld-linux-x86-64.so.2
+
+
+done on a single line:
+
+racket compiler.rkt -v test-programs/__.ifa && nasm -felf64 test-programs/__.asm && ld test-programs/__.o -o test-programs/__ -lc -I/lib64/ld-linux-x86-64.so.2
+
+
+the -lc tells the linker to include the standard library (has functions like printf). I don't know what the -I stuff does, but it is important because otherwise things don't work.

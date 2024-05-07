@@ -31,6 +31,10 @@ racket compiler.rkt -v test-programs/sum1.irv
 
 (Also pass in -m for Mac)
 
+Answer:  
+The purpose of IR-Virtual is to provide a language that possesses some racket-like syntax while functionally being very close to assembly. This makes it a good intermediate language for translation from a racket or racket-like language into assembly. Some of the cons of the implementation is that it isn't very efficcent, by the virtue that it restricts all data to be in a register for it to be used in some way. This also has the upside of requiring less forms to translate to.
+
+
 [ Question 2 ] 
 
 For this task, you will write three new .ifa programs. Your programs
