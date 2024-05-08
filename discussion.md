@@ -53,6 +53,171 @@ carefully the relevance of each of the intermediate representations.
 For this question, please add your `.ifa` programs either (a) here or
 (b) to the repo and write where they are in this file.
 
+Answer:  
+Here is the first .ifa program, test-programs/newProg1.ifa in the repo
+
+```
+Terminal Input:
+racket compiler.rkt -v test-programs/newProg1.ifa
+
+Terminal Output:
+2024/05/07 22:13:55.426641 cmd_run.go:1081: WARNING: cannot start document portal: dial unix /run/user/1000/bus: connect: no such file or directory
+Input source tree in IfArith:
+'(if 0 (print (* (+ 4 6) (* 2 8))) (print (+ 1 1)))
+ifarith-tiny:
+'(if 0 (print (* (+ 4 6) (* 2 8))) (print (+ 1 1)))
+'(if 0 (print (* (+ 4 6) (* 2 8))) (print (+ 1 1)))
+0
+'(print (* (+ 4 6) (* 2 8)))
+'(* (+ 4 6) (* 2 8))
+'(+ 4 6)
+4
+6
+'(* 2 8)
+2
+8
+'(print (+ 1 1))
+'(+ 1 1)
+1
+1
+anf:
+'(let ((x1261 0))
+   (if x1261
+     (let ((x1262 4))
+       (let ((x1263 6))
+         (let ((x1264 (+ x1262 x1263)))
+           (let ((x1265 2))
+             (let ((x1266 8))
+               (let ((x1267 (* x1265 x1266)))
+                 (let ((x1268 (* x1264 x1267))) (print x1268))))))))
+     (let ((x1269 1))
+       (let ((x1270 1)) (let ((x1271 (+ x1269 x1270))) (print x1271))))))
+ir-virtual:
+'(((label lab1272) (mov-lit x1261 0))
+  ((label lab1273) (mov-lit zero1286 0))
+  (cmp x1261 zero1286)
+  (jz lab1274)
+  (jmp lab1282)
+  ((label lab1274) (mov-lit x1262 4))
+  ((label lab1275) (mov-lit x1263 6))
+  ((label lab1276) (mov-reg x1264 x1262))
+  (add x1264 x1263)
+  ((label lab1277) (mov-lit x1265 2))
+  ((label lab1278) (mov-lit x1266 8))
+  ((label lab1279) (mov-reg x1267 x1265))
+  (imul x1267 x1266)
+  ((label lab1280) (mov-reg x1268 x1264))
+  (imul x1268 x1267)
+  ((label lab1281) (print x1268))
+  (return 0)
+  ((label lab1282) (mov-lit x1269 1))
+  ((label lab1283) (mov-lit x1270 1))
+  ((label lab1284) (mov-reg x1271 x1269))
+  (add x1271 x1270)
+  ((label lab1285) (print x1271))
+  (return 0))
+x86:
+section .data
+        int_format db "%ld",10,0
+
+
+        global _main
+        extern printf
+section .text
+
+
+_start: call main
+        mov rax, 60
+        xor rdi, rdi
+        syscall
+
+
+main:   push rbp
+        mov rbp, rsp
+        sub rsp, 224
+        mov esi, 0
+        mov [rbp-96], esi
+        mov esi, 0
+        mov [rbp-8], esi
+        mov edi, [rbp-8]
+        mov eax, [rbp-96]
+        cmp eax, edi
+        mov [rbp-96], eax
+        jz lab1274
+        jmp lab1282
+lab1274:        mov esi, 4
+        mov [rbp-88], esi
+        mov esi, 6
+        mov [rbp-80], esi
+        mov esi, [rbp-88]
+        mov [rbp-72], esi
+        mov edi, [rbp-80]
+        mov eax, [rbp-72]
+        add eax, edi
+        mov [rbp-72], eax
+        mov esi, 2
+        mov [rbp-64], esi
+        mov esi, 8
+        mov [rbp-32], esi
+        mov esi, [rbp-64]
+        mov [rbp-56], esi
+        mov edi, [rbp-32]
+        mov eax, [rbp-56]
+        imul eax, edi
+        mov [rbp-56], eax
+        mov esi, [rbp-72]
+        mov [rbp-48], esi
+        mov edi, [rbp-56]
+        mov eax, [rbp-48]
+        imul eax, edi
+        mov [rbp-48], eax
+        mov esi, [rbp-48]
+        lea rdi, [rel int_format]
+        mov eax, 0
+        call printf
+        mov rax, 0
+        jmp finish_up
+lab1282:        mov esi, 1
+        mov [rbp-40], esi
+        mov esi, 1
+        mov [rbp-16], esi
+        mov esi, [rbp-40]
+        mov [rbp-112], esi
+        mov edi, [rbp-16]
+        mov eax, [rbp-112]
+        add eax, edi
+        mov [rbp-112], eax
+        mov esi, [rbp-112]
+        lea rdi, [rel int_format]
+        mov eax, 0
+        call printf
+        mov rax, 0
+        jmp finish_up
+finish_up:      add rsp, 224
+        leave 
+        ret 
+
+The file has now been written to test-programs/newProg1.asm. You must now assemble and link it.
+(Assemble on Linux, requires nasm)
+        nasm test-programs/newProg1.asm
+(Link on Mac, hopefully)
+        ld test-programs/newProg1.o -o test-programs/newProg1
+```
+
+The first representation is the code that is in the .ifa file. The next representation shows ifArith-tiny simplifying and evaluating the code. The importance of this step doesn't really show itself for the kind of code in newProg1.ifa, but the desired output is to have a simpler version of ifArith that is easier to translate further.
+With the conversion to ANF, the code becomes primarily lets and ifs. The value of this step is similar to the last one, but the translations here are less so for the purpose of code simplification and more so for getting the code to be comprised of simpler instructions, which will be easier to work with when translating further.
+The next representation is IR-Virtual. The purpose of this translation layer was discussed in question 1, but the general idea is that it turns the ANF code into something that maintains some syntactical similarity to ifArith or racket, while also being similar to assembly in the types of instructions used.
+The last representation is assembly, which is the desired output of the compiler, so its relevance should be obvious.
+
+Second ifa program:
+
+`todo`
+
+Third ifa program:
+
+`todo`
+
+
 [ Question 3 ] 
 
 Describe each of the passes of the compiler in a slight degree of
@@ -64,6 +229,11 @@ there could be more?
 
 In answering this question, you must use specific examples that you
 got from running the compiler and generating an output.
+
+Answer:  
+The first part of this question, describing the compiler steps, was discussed a lot in the answer to the previous question. As for the second part, the only passes I might consider redundant is the ifArith-tiny step, as all it does is simplify the number of forms the language has. In some instances, it won't even change anything (see below). This step could probably be combined into the ANF step. As for additional passes, I think there really isn't anything that makes sense to split up. The conversion to x86-64 is quite large code-wise, but IR-virtual already produces code that looks very similar to assembly (see below), so there probably isn't a way to get around that.
+
+`todo: insert relevant code snippets for the parts with (see below labels)`
 
 [ Question 4 ] 
 
