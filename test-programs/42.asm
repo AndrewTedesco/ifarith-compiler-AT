@@ -3,17 +3,17 @@ section .data
 
 
 	global _main
-	extern _printf
+	extern printf
 section .text
 
 
-_start:	call _main
+_start:	call main
 	mov rax, 60
 	xor rdi, rdi
 	syscall
 
 
-_main:	push rbp
+main:	push rbp
 	mov rbp, rsp
 	sub rsp, 16
 	mov esi, 42

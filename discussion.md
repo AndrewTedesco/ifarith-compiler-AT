@@ -263,6 +263,11 @@ ask me.
 Your team will receive a small bonus for being the first team to
 report a unique bug (unique determined by me).
 
+Answer:  
+I found a compilation bug with the program if2. When compiling, it throws some errors if you try and compile it as a 32-bit program, so it needs to be compiled as a 64-bit program. When doing this, it causes a bad output from the program when running it. It prints 4294967290 to the console, which is what it looks like as a 64-bit integer, but it would be -6 if it is to represent a 32-bit integer. -6 is likely the intended output, so there must be an error somewhere within the compilation process that causes the 32-bit output to be printed in a 64-bit format.
+
+Some other problematic programs include the two bool programs. They fail to compile properly, as the compiler cannot recognize `#t` or `#f`. This could be an issue with the compiler, the way the program is written, or something else completely.
+
 [ High Level Reflection ] 
 
 In roughly 100-500 words, write a summary of your findings in working
