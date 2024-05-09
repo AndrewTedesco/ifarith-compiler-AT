@@ -1,16 +1,16 @@
 To: jye130@syr.edu, kkmicins@syr.edu
 Subject: CIS352 P5 Peer Assessment 
 
-Your Name: ___________
+Your Name: ___Kyle Laylor________
 Your Groupmates (up to 2): 
-________________
-________________
+_______Andrew Tedesco_________
+_______Joshua Lim_________
 
 We plan to give most students roughly similar grades, unless a
 groupmate did not attend or did significantly less work. Choose one of
 the following options:
 
-- [ ] -- My groupmembers and I met and collaborated together and did
+- [X] -- My groupmembers and I met and collaborated together and did
   roughly similar amounts of work.
 
 - [ ] -- My groupmembers and I met, but I did the vast bulk of the
