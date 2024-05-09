@@ -209,13 +209,252 @@ With the conversion to ANF, the code becomes primarily lets and ifs. The value o
 The next representation is IR-Virtual. The purpose of this translation layer was discussed in question 1, but the general idea is that it turns the ANF code into something that maintains some syntactical similarity to ifArith or racket, while also being similar to assembly in the types of instructions used.
 The last representation is assembly, which is the desired output of the compiler, so its relevance should be obvious.
 
-Second ifa program:
+Second ifa program: test-programs/newProg2.ifa
+```
+Terminal Input:
+racket compiler.rkt -v test-programs/newProg2.ifa
 
-`todo`
+Terminal Output
+2024/05/09 14:36:27.341010 cmd_run.go:1081: WARNING: cannot start document portal: dial unix /run/user/1000/bus: connect: no such file or directory
+Input source tree in IfArith:
+'(let* ((x (+ 2 4)) (y (* x 8))) (let* ((z (+ y 2))) (print z)))
+ifarith-tiny:
+'(let ((x (+ 2 4))) (let ((y (* x 8))) (let ((z (+ y 2))) (print z))))
+'(let ((x (+ 2 4))) (let ((y (* x 8))) (let ((z (+ y 2))) (print z))))
+'(+ 2 4)
+2
+4
+'(let ((y (* x 8))) (let ((z (+ y 2))) (print z)))
+'(* x 8)
+'x
+8
+'(let ((z (+ y 2))) (print z))
+'(+ y 2)
+'y
+2
+'(print z)
+'z
+anf:
+'(let ((x1261 2))
+   (let ((x1262 4))
+     (let ((x1263 (+ x1261 x1262)))
+       (let ((x x1263))
+         (let ((x1264 8))
+           (let ((x1265 (* x x1264)))
+             (let ((y x1265))
+               (let ((x1266 2))
+                 (let ((x1267 (+ y x1266)))
+                   (let ((z x1267)) (print z)))))))))))
+ir-virtual:
+'(((label lab1268) (mov-lit x1261 2))
+  ((label lab1269) (mov-lit x1262 4))
+  ((label lab1270) (mov-reg x1263 x1261))
+  (add x1263 x1262)
+  ((label lab1271) (mov-reg x x1263))
+  ((label lab1272) (mov-lit x1264 8))
+  ((label lab1273) (mov-reg x1265 x))
+  (imul x1265 x1264)
+  ((label lab1274) (mov-reg y x1265))
+  ((label lab1275) (mov-lit x1266 2))
+  ((label lab1276) (mov-reg x1267 y))
+  (add x1267 x1266)
+  ((label lab1277) (mov-reg z x1267))
+  ((label lab1278) (print z))
+  (return 0))
+x86:
+section .data
+        int_format db "%ld",10,0
 
-Third ifa program:
 
-`todo`
+        global _main
+        extern printf
+section .text
+
+
+_start: call main
+        mov rax, 60
+        xor rdi, rdi
+        syscall
+
+
+main:   push rbp
+        mov rbp, rsp
+        sub rsp, 160
+        mov esi, 2
+        mov [rbp-80], esi
+        mov esi, 4
+        mov [rbp-72], esi
+        mov esi, [rbp-80]
+        mov [rbp-64], esi
+        mov edi, [rbp-72]
+        mov eax, [rbp-64]
+        add eax, edi
+        mov [rbp-64], eax
+        mov esi, [rbp-64]
+        mov [rbp-16], esi
+        mov esi, 8
+        mov [rbp-40], esi
+        mov esi, [rbp-16]
+        mov [rbp-24], esi
+        mov edi, [rbp-40]
+        mov eax, [rbp-24]
+        imul eax, edi
+        mov [rbp-24], eax
+        mov esi, [rbp-24]
+        mov [rbp-32], esi
+        mov esi, 2
+        mov [rbp-8], esi
+        mov esi, [rbp-32]
+        mov [rbp-56], esi
+        mov edi, [rbp-8]
+        mov eax, [rbp-56]
+        add eax, edi
+        mov [rbp-56], eax
+        mov esi, [rbp-56]
+        mov [rbp-48], esi
+        mov esi, [rbp-48]
+        lea rdi, [rel int_format]
+        mov eax, 0
+        call printf
+        mov rax, 0
+        jmp finish_up
+finish_up:      add rsp, 160
+        leave 
+        ret 
+
+The file has now been written to test-programs/newProg2.asm. You must now assemble and link it.
+(Assemble on Linux, requires nasm)
+        nasm test-programs/newProg2.asm
+(Link on Mac, hopefully)
+        ld test-programs/newProg2.o -o test-programs/newProg2
+```
+
+Third ifa program: test-programs/newProg3.ifa
+```
+Terminal Input:
+racket compiler.rkt -v test-programs/newProg3.ifa
+
+Terminal Output:
+2024/05/09 14:51:03.212205 cmd_run.go:1081: WARNING: cannot start document portal: dial unix /run/user/1000/bus: connect: no such file or directory
+Input source tree in IfArith:
+'(let* ((a 6) (b 12) (c (* a b))) (print (+ c (+ a (- b 1)))))
+ifarith-tiny:
+'(let ((a 6)) (let ((b 12)) (let ((c (* a b))) (print (+ c (+ a (- b 1)))))))
+'(let ((a 6)) (let ((b 12)) (let ((c (* a b))) (print (+ c (+ a (- b 1)))))))
+6
+'(let ((b 12)) (let ((c (* a b))) (print (+ c (+ a (- b 1))))))
+12
+'(let ((c (* a b))) (print (+ c (+ a (- b 1)))))
+'(* a b)
+'a
+'b
+'(print (+ c (+ a (- b 1))))
+'(+ c (+ a (- b 1)))
+'c
+'(+ a (- b 1))
+'a
+'(- b 1)
+'b
+1
+anf:
+'(let ((x1261 6))
+   (let ((a x1261))
+     (let ((x1262 12))
+       (let ((b x1262))
+         (let ((x1263 (* a b)))
+           (let ((c x1263))
+             (let ((x1264 1))
+               (let ((x1265 (- b x1264)))
+                 (let ((x1266 (+ a x1265)))
+                   (let ((x1267 (+ c x1266))) (print x1267)))))))))))
+ir-virtual:
+'(((label lab1268) (mov-lit x1261 6))
+  ((label lab1269) (mov-reg a x1261))
+  ((label lab1270) (mov-lit x1262 12))
+  ((label lab1271) (mov-reg b x1262))
+  ((label lab1272) (mov-reg x1263 a))
+  (imul x1263 b)
+  ((label lab1273) (mov-reg c x1263))
+  ((label lab1274) (mov-lit x1264 1))
+  ((label lab1275) (mov-reg x1265 b))
+  (sub x1265 x1264)
+  ((label lab1276) (mov-reg x1266 a))
+  (add x1266 x1265)
+  ((label lab1277) (mov-reg x1267 c))
+  (add x1267 x1266)
+  ((label lab1278) (print x1267))
+  (return 0))
+x86:
+section .data
+        int_format db "%ld",10,0
+
+
+        global _main
+        extern printf
+section .text
+
+
+_start: call main
+        mov rax, 60
+        xor rdi, rdi
+        syscall
+
+
+main:   push rbp
+        mov rbp, rsp
+        sub rsp, 160
+        mov esi, 6
+        mov [rbp-56], esi
+        mov esi, [rbp-56]
+        mov [rbp-64], esi
+        mov esi, 12
+        mov [rbp-48], esi
+        mov esi, [rbp-48]
+        mov [rbp-72], esi
+        mov esi, [rbp-64]
+        mov [rbp-40], esi
+        mov edi, [rbp-72]
+        mov eax, [rbp-40]
+        imul eax, edi
+        mov [rbp-40], eax
+        mov esi, [rbp-40]
+        mov [rbp-80], esi
+        mov esi, 1
+        mov [rbp-32], esi
+        mov esi, [rbp-72]
+        mov [rbp-24], esi
+        mov edi, [rbp-32]
+        mov eax, [rbp-24]
+        sub eax, edi
+        mov [rbp-24], eax
+        mov esi, [rbp-64]
+        mov [rbp-16], esi
+        mov edi, [rbp-24]
+        mov eax, [rbp-16]
+        add eax, edi
+        mov [rbp-16], eax
+        mov esi, [rbp-80]
+        mov [rbp-8], esi
+        mov edi, [rbp-16]
+        mov eax, [rbp-8]
+        add eax, edi
+        mov [rbp-8], eax
+        mov esi, [rbp-8]
+        lea rdi, [rel int_format]
+        mov eax, 0
+        call printf
+        mov rax, 0
+        jmp finish_up
+finish_up:      add rsp, 160
+        leave 
+        ret 
+
+The file has now been written to test-programs/newProg3.asm. You must now assemble and link it.
+(Assemble on Linux, requires nasm)
+        nasm test-programs/newProg3.asm
+(Link on Mac, hopefully)
+        ld test-programs/newProg3.o -o test-programs/newProg3
+```
 
 
 [ Question 3 ] 
@@ -233,7 +472,141 @@ got from running the compiler and generating an output.
 Answer:  
 The first part of this question, describing the compiler steps, was discussed a lot in the answer to the previous question. As for the second part, the only passes I might consider redundant is the ifArith-tiny step, as all it does is simplify the number of forms the language has. In some instances, it won't even change anything (see below). This step could probably be combined into the ANF step. As for additional passes, I think there really isn't anything that makes sense to split up. The conversion to x86-64 is quite large code-wise, but IR-virtual already produces code that looks very similar to assembly (see below), so there probably isn't a way to get around that.
 
-`todo: insert relevant code snippets for the parts with (see below labels)`
+Here's an instance of nothing really changing between ifArith and ifArith-tiny:
+```
+Input source tree in IfArith:
+'(if 0 (print (* (+ 4 6) (* 2 8))) (print (+ 1 1)))
+ifarith-tiny:
+'(if 0 (print (* (+ 4 6) (* 2 8))) (print (+ 1 1)))
+'(if 0 (print (* (+ 4 6) (* 2 8))) (print (+ 1 1)))
+0
+'(print (* (+ 4 6) (* 2 8)))
+...
+```
+
+And here is an example of things changing:
+```
+Input source tree in IfArith:
+'(let* ((x (+ 2 4)) (y (* x 8))) (let* ((z (+ y 2))) (print z)))
+ifarith-tiny:
+'(let ((x (+ 2 4))) (let ((y (* x 8))) (let ((z (+ y 2))) (print z))))
+'(let ((x (+ 2 4))) (let ((y (* x 8))) (let ((z (+ y 2))) (print z))))
+'(+ 2 4)
+2
+4
+'(let ((y (* x 8))) (let ((z (+ y 2))) (print z)))
+...
+```
+
+Here is what some IRV code looks like:
+```
+'(((label lab1272) (mov-lit x1261 0))
+  ((label lab1273) (mov-lit zero1286 0))
+  (cmp x1261 zero1286)
+  (jz lab1274)
+  (jmp lab1282)
+  ((label lab1274) (mov-lit x1262 4))
+  ((label lab1275) (mov-lit x1263 6))
+  ((label lab1276) (mov-reg x1264 x1262))
+  (add x1264 x1263)
+  ((label lab1277) (mov-lit x1265 2))
+  ((label lab1278) (mov-lit x1266 8))
+  ((label lab1279) (mov-reg x1267 x1265))
+  (imul x1267 x1266)
+  ((label lab1280) (mov-reg x1268 x1264))
+  (imul x1268 x1267)
+  ((label lab1281) (print x1268))
+  (return 0)
+  ((label lab1282) (mov-lit x1269 1))
+  ((label lab1283) (mov-lit x1270 1))
+  ((label lab1284) (mov-reg x1271 x1269))
+  (add x1271 x1270)
+  ((label lab1285) (print x1271))
+  (return 0))
+```
+
+And here is the assembly it was compiled to:
+```
+section .data
+        int_format db "%ld",10,0
+
+
+        global _main
+        extern printf
+section .text
+
+
+_start: call main
+        mov rax, 60
+        xor rdi, rdi
+        syscall
+
+
+main:   push rbp
+        mov rbp, rsp
+        sub rsp, 224
+        mov esi, 0
+        mov [rbp-96], esi
+        mov esi, 0
+        mov [rbp-8], esi
+        mov edi, [rbp-8]
+        mov eax, [rbp-96]
+        cmp eax, edi
+        mov [rbp-96], eax
+        jz lab1274
+        jmp lab1282
+lab1274:        mov esi, 4
+        mov [rbp-88], esi
+        mov esi, 6
+        mov [rbp-80], esi
+        mov esi, [rbp-88]
+        mov [rbp-72], esi
+        mov edi, [rbp-80]
+        mov eax, [rbp-72]
+        add eax, edi
+        mov [rbp-72], eax
+        mov esi, 2
+        mov [rbp-64], esi
+        mov esi, 8
+        mov [rbp-32], esi
+        mov esi, [rbp-64]
+        mov [rbp-56], esi
+        mov edi, [rbp-32]
+        mov eax, [rbp-56]
+        imul eax, edi
+        mov [rbp-56], eax
+        mov esi, [rbp-72]
+        mov [rbp-48], esi
+        mov edi, [rbp-56]
+        mov eax, [rbp-48]
+        imul eax, edi
+        mov [rbp-48], eax
+        mov esi, [rbp-48]
+        lea rdi, [rel int_format]
+        mov eax, 0
+        call printf
+        mov rax, 0
+        jmp finish_up
+lab1282:        mov esi, 1
+        mov [rbp-40], esi
+        mov esi, 1
+        mov [rbp-16], esi
+        mov esi, [rbp-40]
+        mov [rbp-112], esi
+        mov edi, [rbp-16]
+        mov eax, [rbp-112]
+        add eax, edi
+        mov [rbp-112], eax
+        mov esi, [rbp-112]
+        lea rdi, [rel int_format]
+        mov eax, 0
+        call printf
+        mov rax, 0
+        jmp finish_up
+finish_up:      add rsp, 224
+        leave 
+        ret 
+```
 
 [ Question 4 ] 
 
@@ -244,6 +617,9 @@ project that we discussed in class this semester. There is no specific
 definition of what an idiom is: think carefully about whether you see
 any pattern in this code that resonates with you from earlier in the
 semester.
+
+Answer:  
+One of the programming idioms that we identified in the code was lambda calculus. It is used as the groundwork for ifArith and ifArith-tiny. Much of the compiler program was also tail-recursive, which makes more efficent use of memory by avoiding pushing work to the stack. Another idiom we identified was pattern matching, which is used extensively in the compiler code. Pattern matching is a very neat thing, it can serve a simlar purpose as to what a novice programmer might use an if-else-if block for, but avoids needing to have large conditional statements and is generally cleaner code.
 
 [ Question 5 ] 
 
@@ -278,3 +654,5 @@ nuts and bolts of code, try to use this experience as a way to think
 about how you would approach doing group code critique. What would you
 do differently next time, what did you learn?
 
+Answer:  
+We generally found the compiler code quite interesting, just by the nature of what it is trying to accomplish and the fact that it is written in racket, a functional programming language. We also learned that console commands for compiling and linking programs can be quite finicky at times. We had problems in the beginning with building the test programs on linux but eventually figured it out (see compilation-procedure.txt), so this was probably the most difficult part of the project. Another thing we learned from doing question 5 is that when something breaks and the compiler is potentially at fault, it is very difficult to think of what the problem could be.
